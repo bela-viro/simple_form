@@ -1,563 +1,429 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>学生成绩管理系统</title>
-    <!-- 引入Element Plus -->
-    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
-    <!-- 引入Vue 3 -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- 引入Element Plus组件库 -->
-    <script src="https://unpkg.com/element-plus"></script>
-    <!-- 引入Axios -->
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f5f7fa;
-        }
-        .el-container {
-            height: 100vh;
-        }
-        .el-header {
-            background-color: #409EFF;
-            color: white;
-            line-height: 60px;
-            padding: 0 20px;
-        }
-        .el-aside {
-            background-color: white;
-            border-right: 1px solid #e6e6e6;
-            padding: 20px 0;
-        }
-        .el-main {
-            padding: 20px;
-            background-color: #f5f7fa;
-        }
-        .system-title {
-            font-size: 20px;
-            font-weight: bold;
-        }
-        .menu-item {
-            height: 50px;
-            line-height: 50px;
-            padding: 0 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-        }
-        .menu-item:hover, .menu-item.active {
-            background-color: #ecf5ff;
-            color: #409EFF;
-        }
-        .menu-item i {
-            margin-right: 10px;
-            font-size: 18px;
-        }
-        .content-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .el-table {
-            background-color: white;
-            border-radius: 4px;
-        }
-        .operation-column {
-            color: #409EFF;
-        }
-        .operation-column .delete {
-            color: #F56C6C;
-            margin-left: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>电动自行车回收</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background-color: #fff;
+      color: #333;
+    }
+
+    .header {
+      background-color: #007aff;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header .back {
+      color: #fff;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    .header h1 {
+      color: #fff;
+      font-size: 18px;
+      font-weight: normal;
+    }
+
+    .form-container {
+      padding: 15px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .form-group .required {
+      color: red;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="tel"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    /* 上传按钮容器：统一尺寸 */
+    .upload-btn-wrap {
+      position: relative;
+      width: 100%;
+      height: 120px;
+    }
+
+    /* 上传按钮：填满容器 */
+    .upload-btn {
+      width: 100%;
+      height: 100%;
+      border: 1px dashed #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background-color: #fff;
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 1;
+    }
+
+    .upload-btn::before {
+      content: "+";
+      font-size: 36px;
+      margin-bottom: 8px;
+      color: #ccc;
+    }
+
+    .upload-btn-wrap input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    /* 预览容器：匹配上传按钮尺寸 */
+    .preview-wrap {
+      width: 100%;
+      height: 120px;
+      margin-top: 8px;
+      position: relative;
+    }
+
+    /* 预览图片：填满容器 + 自适应规则 */
+    .preview-img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+      display: none;
+      /* 默认隐藏，选择图片后显示 */
+      z-index: 3;
+    }
+
+    .compression-info {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      display: none;
+      z-index: 4;
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(0, 122, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #007aff;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #007aff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .submit-btn:active {
+      opacity: 0.8;
+    }
+
+    .submit-btn.loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .submit-btn.loading::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin-top: -10px;
+      margin-left: -10px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  </style>
 </head>
+
 <body>
-    <div id="app">
-        <el-container>
-            <el-header>
-                <div class="system-title">学生成绩管理系统</div>
-            </el-header>
-            <el-container>
-                <el-aside width="200px">
-                    <div class="menu-item" :class="{ active: currentView === 'students' }" @click="switchView('students')">
-                        <i class="el-icon-user"></i>
-                        学生管理
-                    </div>
-                    <div class="menu-item" :class="{ active: currentView === 'courses' }" @click="switchView('courses')">
-                        <i class="el-icon-reading"></i>
-                        课程管理
-                    </div>
-                    <div class="menu-item" :class="{ active: currentView === 'scores' }" @click="switchView('scores')">
-                        <i class="el-icon-document"></i>
-                        成绩管理
-                    </div>
-                </el-aside>
-                <el-main>
-                    <!-- 学生管理视图 -->
-                    <div v-if="currentView === 'students'">
-                        <div class="content-header">
-                            <h3>学生管理</h3>
-                            <el-button type="primary" @click="showAddStudentDialog">+ 新增学生</el-button>
-                        </div>
-                        <el-table :data="students" style="width: 100%" v-loading="loading.students">
-                            <el-table-column prop="stuId" label="序号" width="80"></el-table-column>
-                            <el-table-column prop="stuName" label="姓名"></el-table-column>
-                            <el-table-column prop="stuGender" label="性别" width="80"></el-table-column>
-                            <el-table-column prop="stuClass" label="班级"></el-table-column>
-                            <el-table-column prop="stuPhone" label="电话"></el-table-column>
-                            <el-table-column label="操作" width="150">
-                                <template #default="scope">
-                                    <span class="operation-column">
-                                        <a @click="showEditStudentDialog(scope.row)">编辑</a>
-                                        <a class="delete" @click="deleteStudent(scope.row)">删除</a>
-                                    </span>
-                                </template>
-                            </el-table-column>
-                        </el-table>
-                    </div>
+  <div class="header">
+    <a href="javascript:history.back()" class="back">返回</a>
+    <h1>电动自行车回收</h1>
+    <span></span>
+  </div>
 
-                    <!-- 课程管理视图 -->
-                    <div v-if="currentView === 'courses'">
-                        <div class="content-header">
-                            <h3>课程管理</h3>
-                            <el-button type="primary" @click="showAddCourseDialog">+ 新增课程</el-button>
-                        </div>
-                        <el-table :data="courses" style="width: 100%" v-loading="loading.courses">
-                            <el-table-column prop="courseId" label="序号" width="80"></el-table-column>
-                            <el-table-column prop="courseName" label="课程名称"></el-table-column>
-                            <el-table-column prop="teacher" label="教师"></el-table-column>
-                            <el-table-column label="操作" width="150">
-                                <template #default="scope">
-                                    <span class="operation-column">
-                                        <a @click="showEditCourseDialog(scope.row)">编辑</a>
-                                        <a class="delete" @click="deleteCourse(scope.row)">删除</a>
-                                    </span>
-                                </template>
-                            </el-table-column>
-                        </el-table>
-                    </div>
+  <div class="form-container">
+    <form id="recycleForm" action="#" method="post" enctype="multipart/form-data">
+      <!-- 姓名 -->
+      <div class="form-group">
+        <label><span class="required">*</span>姓名</label>
+        <input type="text" name="name" placeholder="请填写姓名" required />
+      </div>
 
-                    <!-- 成绩管理视图 -->
-                    <div v-if="currentView === 'scores'">
-                        <div class="content-header">
-                            <h3>成绩管理</h3>
-                            <el-button type="primary" @click="showAddScoreDialog">+ 新增成绩</el-button>
-                        </div>
-                        <el-table :data="scores" style="width: 100%" v-loading="loading.scores">
-                            <el-table-column prop="scoreId" label="序号" width="80"></el-table-column>
-                            <el-table-column prop="student.stuName" label="学生姓名"></el-table-column>
-                            <el-table-column prop="course.courseName" label="课程名称"></el-table-column>
-                            <el-table-column prop="score" label="分数"></el-table-column>
-                            <el-table-column prop="semester" label="学期"></el-table-column>
-                            <el-table-column label="操作" width="150">
-                                <template #default="scope">
-                                    <span class="operation-column">
-                                        <a @click="showEditScoreDialog(scope.row)">编辑</a>
-                                        <a class="delete" @click="deleteScore(scope.row)">删除</a>
-                                    </span>
-                                </template>
-                            </el-table-column>
-                        </el-table>
-                    </div>
-                </el-main>
-            </el-container>
-        </el-container>
+      <!-- 电话号码 -->
+      <div class="form-group">
+        <label><span class="required">*</span>电话号码</label>
+        <input type="tel" name="phone" placeholder="请填写电话号码" required />
+      </div>
 
-        <!-- 学生对话框 -->
-        <el-dialog v-model="studentDialog.visible" :title="studentDialog.title">
-            <el-form :model="studentDialog.form" label-width="80px">
-                <el-form-item label="姓名">
-                    <el-input v-model="studentDialog.form.stuName"></el-input>
-                </el-form-item>
-                <el-form-item label="性别">
-                    <el-select v-model="studentDialog.form.stuGender" style="width: 100%">
-                        <el-option label="男" value="M"></el-option>
-                        <el-option label="女" value="F"></el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="班级">
-                    <el-input v-model="studentDialog.form.stuClass"></el-input>
-                </el-form-item>
-                <el-form-item label="电话">
-                    <el-input v-model="studentDialog.form.stuPhone"></el-input>
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="studentDialog.visible = false">取消</el-button>
-                    <el-button type="primary" @click="saveStudent">确定</el-button>
-                </span>
-            </template>
-        </el-dialog>
+      <!-- 身份证号 -->
+      <div class="form-group">
+        <label><span class="required">*</span>身份证号</label>
+        <input type="text" name="id_card" placeholder="请输入身份证号" required />
+      </div>
 
-        <!-- 课程对话框 -->
-        <el-dialog v-model="courseDialog.visible" :title="courseDialog.title">
-            <el-form :model="courseDialog.form" label-width="80px">
-                <el-form-item label="课程名称">
-                    <el-input v-model="courseDialog.form.courseName"></el-input>
-                </el-form-item>
-                <el-form-item label="教师">
-                    <el-input v-model="courseDialog.form.teacher"></el-input>
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="courseDialog.visible = false">取消</el-button>
-                    <el-button type="primary" @click="saveCourse">确定</el-button>
-                </span>
-            </template>
-        </el-dialog>
+      <!-- 承诺书（上传+预览） -->
+      <div class="form-group">
+        <label><span class="required">*</span>承诺书</label>
+        <div class="upload-btn-wrap">
+          <div class="upload-btn">选择图片</div>
+          <input type="file" name="promise_file" accept="image/*" required
+            onchange="handleImageUpload(this, 'preview-promise')" />
+          <img id="preview-promise" class="preview-img" src="" alt="承诺书预览" style="display: none;" />
+          <div class="loading-overlay" id="loading-promise">
+            <div class="spinner"></div>
+          </div>
+        </div>
+        <div id="compression-info-promise" class="compression-info"></div>
+      </div>
 
-        <!-- 成绩对话框 -->
-        <el-dialog v-model="scoreDialog.visible" :title="scoreDialog.title">
-            <el-form :model="scoreDialog.form" label-width="80px">
-                <el-form-item label="学生">
-                    <el-select v-model="scoreDialog.form.student.stuId" style="width: 100%">
-                        <el-option v-for="student in students" 
-                                 :key="student.stuId" 
-                                 :label="student.stuName" 
-                                 :value="student.stuId">
-                        </el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="课程">
-                    <el-select v-model="scoreDialog.form.course.courseId" style="width: 100%">
-                        <el-option v-for="course in courses" 
-                                 :key="course.courseId" 
-                                 :label="course.courseName" 
-                                 :value="course.courseId">
-                        </el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="分数">
-                    <el-input-number v-model="scoreDialog.form.score" 
-                                   :min="0" 
-                                   :max="100" 
-                                   :precision="1"
-                                   style="width: 100%">
-                    </el-input-number>
-                </el-form-item>
-                <el-form-item label="学期">
-                    <el-input v-model="scoreDialog.form.semester"></el-input>
-                </el-form-item>
-            </el-form>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="scoreDialog.visible = false">取消</el-button>
-                    <el-button type="primary" @click="saveScore">确定</el-button>
-                </span>
-            </template>
-        </el-dialog>
-    </div>
+      <!-- 旧车架号（上传+预览） -->
+      <div class="form-group">
+        <label>旧车架号</label>
+        <div class="upload-btn-wrap">
+          <div class="upload-btn">选择图片</div>
+          <input type="file" name="frame_file" accept="image/*" onchange="handleImageUpload(this, 'preview-frame')" />
+          <img id="preview-frame" class="preview-img" src="" alt="旧车架号预览" style="display: none;" />
+          <div class="loading-overlay" id="loading-frame">
+            <div class="spinner"></div>
+          </div>
+        </div>
+        <div id="compression-info-frame" class="compression-info"></div>
+      </div>
 
-    <script>
-        const { createApp, ref } = Vue;
-        const app = createApp({
-            setup() {
-                const currentView = ref('students');
-                const loading = ref({
-                    students: false,
-                    courses: false,
-                    scores: false
-                });
+      <!-- 旧车发票（上传+预览） -->
+      <div class="form-group">
+        <label>旧车发票</label>
+        <div class="upload-btn-wrap">
+          <div class="upload-btn">选择图片</div>
+          <input type="file" name="invoice_file" accept="image/*"
+            onchange="handleImageUpload(this, 'preview-invoice')" />
+          <img id="preview-invoice" class="preview-img" src="" alt="旧车发票预览" style="display: none;" />
+          <div class="loading-overlay" id="loading-invoice">
+            <div class="spinner"></div>
+          </div>
+        </div>
+        <div id="compression-info-invoice" class="compression-info"></div>
+      </div>
 
-                // 数据
-                const students = ref([]);
-                const courses = ref([]);
-                const scores = ref([]);
+      <button type="submit" class="submit-btn" id="submitBtn">提交</button>
+    </form>
+  </div>
 
-                // 对话框状态
-                const studentDialog = ref({
-                    visible: false,
-                    title: '',
-                    form: {
-                        stuName: '',
-                        stuGender: 'M',
-                        stuClass: '',
-                        stuPhone: ''
-                    }
-                });
+  <script>
+    // 图片压缩配置
+    const COMPRESS_CONFIG = {
+      maxWidth: 1200,      // 最大宽度
+      maxHeight: 1200,     // 最大高度
+      quality: 0.7,        // 压缩质量 (0.7 = 70%)
+      maxSizeMB: 1         // 最大文件大小 (MB)
+    };
 
-                const courseDialog = ref({
-                    visible: false,
-                    title: '',
-                    form: {
-                        courseName: '',
-                        teacher: ''
-                    }
-                });
+    // 处理图片上传和压缩
+    async function handleImageUpload(input, previewId) {
+      const file = input.files[0];
+      if (!file) return;
 
-                const scoreDialog = ref({
-                    visible: false,
-                    title: '',
-                    form: {
-                        student: { stuId: null },
-                        course: { courseId: null },
-                        score: 0,
-                        semester: ''
-                    }
-                });
+      const loadingElement = document.getElementById(`loading-${previewId.split('-')[1]}`);
+      const previewElement = document.getElementById(previewId);
+      const infoElement = document.getElementById(`compression-info-${previewId.split('-')[1]}`);
+      const uploadBtn = input.parentNode.querySelector('.upload-btn');
 
-                // 视图切换
-                const switchView = async (view) => {
-                    currentView.value = view;
-                    // 切换视图时加载对应数据
-                    if (view === 'students') {
-                        await loadStudents();
-                    } else if (view === 'courses') {
-                        await loadCourses();
-                    } else if (view === 'scores') {
-                        await loadScores();
-                    }
-                };
+      // 显示加载动画
+      loadingElement.style.display = 'flex';
+      previewElement.style.display = 'none';
+      infoElement.textContent = '';
 
-                // 加载数据
-                const loadStudents = async () => {
-                    loading.value.students = true;
-                    try {
-                        const response = await axios.get('/api/students');
-                        students.value = response.data;
-                    } catch (error) {
-                        ElMessage.error('加载学生数据失败');
-                    } finally {
-                        loading.value.students = false;
-                    }
-                };
+      try {
+        // 压缩图片
+        const compressedFile = await compressImage(file);
 
-                const loadCourses = async () => {
-                    loading.value.courses = true;
-                    try {
-                        const response = await axios.get('/api/courses');
-                        courses.value = response.data;
-                    } catch (error) {
-                        ElMessage.error('加载课程数据失败');
-                    } finally {
-                        loading.value.courses = false;
-                    }
-                };
+        // 显示压缩信息
+        const originalSize = (file.size / 1024).toFixed(2);
+        const compressedSize = (compressedFile.size / 1024).toFixed(2);
+        const reduction = ((1 - compressedFile.size / file.size) * 100).toFixed(1);
 
-                const loadScores = async () => {
-                    loading.value.scores = true;
-                    try {
-                        const response = await axios.get('/api/scores');
-                        scores.value = response.data;
-                    } catch (error) {
-                        ElMessage.error('加载成绩数据失败');
-                    } finally {
-                        loading.value.scores = false;
-                    }
-                };
+        infoElement.textContent = `压缩: ${originalSize}KB → ${compressedSize}KB (节省${reduction}%)`;
+        infoElement.style.color = '#007aff';
 
-                // 学生相关方法
-                const showAddStudentDialog = () => {
-                    studentDialog.value.title = '新增学生';
-                    studentDialog.value.form = {
-                        stuName: '',
-                        stuGender: 'M',
-                        stuClass: '',
-                        stuPhone: ''
-                    };
-                    studentDialog.value.visible = true;
-                };
+        // 创建预览
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          previewElement.src = e.target.result;
+          previewElement.style.display = 'block';
+          uploadBtn.style.display = 'none';
+          loadingElement.style.display = 'none';
 
-                const showEditStudentDialog = (student) => {
-                    studentDialog.value.title = '编辑学生';
-                    studentDialog.value.form = {
-                        stuId: student.stuId,
-                        stuName: student.stuName,
-                        stuGender: student.stuGender,
-                        stuClass: student.stuClass,
-                        stuPhone: student.stuPhone
-                    };
-                    studentDialog.value.visible = true;
-                };
+          // 替换原文件为压缩后的文件
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(compressedFile);
+          input.files = dataTransfer.files;
+        };
+        reader.readAsDataURL(compressedFile);
+      } catch (error) {
+        console.error('图片压缩失败:', error);
+        loadingElement.style.display = 'none';
+        infoElement.textContent = '压缩失败，使用原文件';
+        infoElement.style.color = 'red';
 
-                const saveStudent = async () => {
-                    try {
-                        let response;
-                        if (studentDialog.value.form.stuId) {
-                            response = await axios.put(`/api/students/${studentDialog.value.form.stuId}`, studentDialog.value.form);
-                        } else {
-                            response = await axios.post('/api/students', studentDialog.value.form);
-                        }
-                        studentDialog.value.visible = false;
-                        ElMessage.success('保存成功');
-                        // 重新加载数据并切换到学生视图
-                        await switchView('students');
-                    } catch (error) {
-                        console.error('保存失败:', error);
-                        ElMessage.error('保存失败: ' + (error.response?.data?.message || error.message || '未知错误'));
-                    }
-                };
+        // 显示原始图片预览
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          previewElement.src = e.target.result;
+          previewElement.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    }
 
-                const deleteStudent = async (student) => {
-                    try {
-                        await ElMessageBox.confirm('确定要删除该学生吗？', '提示', {
-                            confirmButtonText: '确定',
-                            cancelButtonText: '取消',
-                            type: 'warning'
-                        });
-                        
-                        await axios.delete(`/api/students/${student.stuId}`);
-                        ElMessage.success('删除成功');
-                        // 重新加载数据并切换到学生视图
-                        await switchView('students');
-                    } catch (error) {
-                        if (error !== 'cancel') {
-                            console.error('删除失败:', error);
-                            ElMessage.error('删除失败: ' + (error.response?.data?.message || error.message || '未知错误'));
-                        }
-                    }
-                };
+    // 图片压缩处理函数
+    function compressImage(file) {
+      return new Promise((resolve, reject) => {
+        // 如果文件小于1MB，不需要压缩
+        if (file.size <= COMPRESS_CONFIG.maxSizeMB * 1024 * 1024) {
+          resolve(file);
+          return;
+        }
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        img.onload = () => {
+          // 计算新尺寸
+          let width = img.width;
+          let height = img.height;
 
-                // 课程相关方法
-                const showAddCourseDialog = () => {
-                    courseDialog.value.title = '新增课程';
-                    courseDialog.value.form = {
-                        courseName: '',
-                        teacher: ''
-                    };
-                    courseDialog.value.visible = true;
-                };
+          if (width > COMPRESS_CONFIG.maxWidth || height > COMPRESS_CONFIG.maxHeight) {
+            const ratio = Math.min(
+              COMPRESS_CONFIG.maxWidth / width,
+              COMPRESS_CONFIG.maxHeight / height
+            );
+            width = Math.floor(width * ratio);
+            height = Math.floor(height * ratio);
+          }
 
-                const showEditCourseDialog = (course) => {
-                    courseDialog.value.title = '编辑课程';
-                    courseDialog.value.form = { ...course };
-                    courseDialog.value.visible = true;
-                };
+          // 创建Canvas进行压缩
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
 
-                const saveCourse = async () => {
-                    try {
-                        let response;
-                        if (courseDialog.value.form.courseId) {
-                            response = await axios.put(`/api/courses/${courseDialog.value.form.courseId}`, courseDialog.value.form);
-                        } else {
-                            response = await axios.post('/api/courses', courseDialog.value.form);
-                        }
-                        courseDialog.value.visible = false;
-                        ElMessage.success('保存成功');
-                        // 重新加载数据并切换到课程视图
-                        await switchView('courses');
-                    } catch (error) {
-                        console.error('保存失败:', error);
-                        ElMessage.error('保存失败: ' + (error.response?.data?.message || error.message || '未知错误'));
-                    }
-                };
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
 
-                const deleteCourse = async (course) => {
-                    try {
-                        await ElMessageBox.confirm('确定要删除该课程吗？', '提示', {
-                            confirmButtonText: '确定',
-                            cancelButtonText: '取消',
-                            type: 'warning'
-                        });
-                        
-                        await axios.delete(`/api/courses/${course.courseId}`);
-                        ElMessage.success('删除成功');
-                        // 重新加载数据并切换到课程视图
-                        await switchView('courses');
-                    } catch (error) {
-                        if (error !== 'cancel') {
-                            console.error('删除失败:', error);
-                            ElMessage.error('删除失败: ' + (error.response?.data?.message || error.message || '未知错误'));
-                        }
-                    }
-                };
+          // 转换为Blob
+          canvas.toBlob(
+            blob => {
+              if (!blob) {
+                reject(new Error('图片压缩失败'));
+                return;
+              }
 
-                // 成绩相关方法
-                const showAddScoreDialog = () => {
-                    scoreDialog.value.title = '新增成绩';
-                    scoreDialog.value.form = {
-                        student: { stuId: null },
-                        course: { courseId: null },
-                        score: 0,
-                        semester: ''
-                    };
-                    scoreDialog.value.visible = true;
-                };
+              // 创建压缩后的文件对象
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+              });
 
-                const showEditScoreDialog = (score) => {
-                    scoreDialog.value.title = '编辑成绩';
-                    scoreDialog.value.form = { ...score };
-                    scoreDialog.value.visible = true;
-                };
+              URL.revokeObjectURL(img.src);
+              resolve(compressedFile);
+            },
+            'image/jpeg',
+            COMPRESS_CONFIG.quality
+          );
+        };
 
-                const saveScore = async () => {
-                    try {
-                        let response;
-                        if (scoreDialog.value.form.scoreId) {
-                            response = await axios.put(`/api/scores/${scoreDialog.value.form.scoreId}`, scoreDialog.value.form);
-                        } else {
-                            response = await axios.post('/api/scores', scoreDialog.value.form);
-                        }
-                        scoreDialog.value.visible = false;
-                        ElMessage.success('保存成功');
-                        // 重新加载数据并切换到成绩视图
-                        await switchView('scores');
-                    } catch (error) {
-                        console.error('保存失败:', error);
-                        ElMessage.error('保存失败: ' + (error.response?.data?.message || error.message || '未知错误'));
-                    }
-                };
+        img.onerror = () => {
+          URL.revokeObjectURL(img.src);
+          reject(new Error('图片加载失败'));
+        };
+      });
+    }
 
-                const deleteScore = async (score) => {
-                    try {
-                        await ElMessageBox.confirm('确定要删除该成绩吗？', '提示', {
-                            confirmButtonText: '确定',
-                            cancelButtonText: '取消',
-                            type: 'warning'
-                        });
-                        
-                        await axios.delete(`/api/scores/${score.scoreId}`);
-                        ElMessage.success('删除成功');
-                        // 重新加载数据并切换到成绩视图
-                        await switchView('scores');
-                    } catch (error) {
-                        if (error !== 'cancel') {
-                            console.error('删除失败:', error);
-                            ElMessage.error('删除失败: ' + (error.response?.data?.message || error.message || '未知错误'));
-                        }
-                    }
-                };
+    // 表单提交处理
+    document.getElementById('recycleForm').addEventListener('submit', function (e) {
+      e.preventDefault();
 
-                // 初始化加载
-                loadStudents();
-                loadCourses();
-                loadScores();
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
 
-                return {
-                    currentView,
-                    loading,
-                    students,
-                    courses,
-                    scores,
-                    studentDialog,
-                    courseDialog,
-                    scoreDialog,
-                    switchView,
-                    showAddStudentDialog,
-                    showEditStudentDialog,
-                    saveStudent,
-                    deleteStudent,
-                    showAddCourseDialog,
-                    showEditCourseDialog,
-                    saveCourse,
-                    deleteCourse,
-                    showAddScoreDialog,
-                    showEditScoreDialog,
-                    saveScore,
-                    deleteScore
-                };
-            }
-        });
-
-        app.use(ElementPlus);
-        app.mount('#app');
-    </script>
+      // 模拟表单提交
+      setTimeout(() => {
+        alert('表单提交成功！');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+      }, 1500);
+    });
+  </script>
 </body>
-</html> 
+
+</html>
