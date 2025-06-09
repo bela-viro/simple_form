@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生成绩管理系统</title>
+    <!-- 引入Element Plus -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <!-- 引入Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- 引入Element Plus组件库 -->
+    <script src="https://unpkg.com/element-plus"></script>
+    <!-- 引入Axios -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fa;
+        }
+        .el-container {
+            height: 100vh;
+        }
+        .el-header {
+            background-color: #409EFF;
+            color: white;
+            line-height: 60px;
+            padding: 0 20px;
+        }
+        .el-aside {
+            background-color: white;
+            border-right: 1px solid #e6e6e6;
+            padding: 20px 0;
+        }
+        .el-main {
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .system-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .menu-item {
+            height: 50px;
+            line-height: 50px;
+            padding: 0 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        .menu-item:hover, .menu-item.active {
+            background-color: #ecf5ff;
+            color: #409EFF;
+        }
+        .menu-item i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .el-table {
+            background-color: white;
+            border-radius: 4px;
+        }
+        .operation-column {
+            color: #409EFF;
+        }
+        .operation-column .delete {
+            color: #F56C6C;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <el-container>
+            <el-header>
+                <div class="system-title">学生成绩管理系统</div>
+            </el-header>
+            <el-container>
+                <el-aside width="200px">
+                    <div class="menu-item" :class="{ active: currentView === 'students' }" @click="switchView('students')">
+                        <i class="el-icon-user"></i>
+                        学生管理
+                    </div>
+                    <div class="menu-item" :class="{ active: currentView === 'courses' }" @click="switchView('courses')">
+                        <i class="el-icon-reading"></i>
+                        课程管理
+                    </div>
+                    <div class="menu-item" :class="{ active: currentView === 'scores' }" @click="switchView('scores')">
+                        <i class="el-icon-document"></i>
+                        成绩管理
+                    </div>
+                </el-aside>
+                <el-main>
+                    <!-- 学生管理视图 -->
+                    <div v-if="currentView === 'students'">
+                        <div class="content-header">
+                            <h3>学生管理</h3>
+                            <el-button type="primary" @click="showAddStudentDialog">+ 新增学生</el-button>
+                        </div>
+                        <el-table :data="students" style="width: 100%" v-loading="loading.students">
+                            <el-table-column prop="stuId" label="序号" width="80"></el-table-column>
+                            <el-table-column prop="stuName" label="姓名"></el-table-column>
+                            <el-table-column prop="stuGender" label="性别" width="80"></el-table-column>
+                            <el-table-column prop="stuClass" label="班级"></el-table-column>
+                            <el-table-column prop="stuPhone" label="电话"></el-table-column>
+                            <el-table-column label="操作" width="150">
+                                <template #default="scope">
+                                    <span class="operation-column">
+                                        <a @click="showEditStudentDialog(scope.row)">编辑</a>
+                                        <a class="delete" @click="deleteStudent(scope.row)">删除</a>
+                                    </span>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+
+                    <!-- 课程管理视图 -->
+                    <div v-if="currentView === 'courses'">
+                        <div class="content-header">
+                            <h3>课程管理</h3>
+                            <el-button type="primary" @click="showAddCourseDialog">+ 新增课程</el-button>
+                        </div>
+                        <el-table :data="courses" style="width: 100%" v-loading="loading.courses">
+                            <el-table-column prop="courseId" label="序号" width="80"></el-table-column>
+                            <el-table-column prop="courseName" label="课程名称"></el-table-column>
+                            <el-table-column prop="teacher" label="教师"></el-table-column>
+                            <el-table-column label="操作" width="150">
+                                <template #default="scope">
+                                    <span class="operation-column">
+                                        <a @click="showEditCourseDialog(scope.row)">编辑</a>
+                                        <a class="delete" @click="deleteCourse(scope.row)">删除</a>
+                                    </span>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+
+                    <!-- 成绩管理视图 -->
+                    <div v-if="currentView === 'scores'">
+                        <div class="content-header">
+                            <h3>成绩管理</h3>
+                            <el-button type="primary" @click="showAddScoreDialog">+ 新增成绩</el-button>
+                        </div>
+                        <el-table :data="scores" style="width: 100%" v-loading="loading.scores">
+                            <el-table-column prop="scoreId" label="序号" width="80"></el-table-column>
+                            <el-table-column prop="student.stuName" label="学生姓名"></el-table-column>
+                            <el-table-column prop="course.courseName" label="课程名称"></el-table-column>
+                            <el-table-column prop="score" label="分数"></el-table-column>
+                            <el-table-column prop="semester" label="学期"></el-table-column>
+                            <el-table-column label="操作" width="150">
+                                <template #default="scope">
+                                    <span class="operation-column">
+                                        <a @click="showEditScoreDialog(scope.row)">编辑</a>
+                                        <a class="delete" @click="deleteScore(scope.row)">删除</a>
+                                    </span>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </el-main>
+            </el-container>
+        </el-container>
+
+        <!-- 学生对话框 -->
+        <el-dialog v-model="studentDialog.visible" :title="studentDialog.title">
+            <el-form :model="studentDialog.form" label-width="80px">
+                <el-form-item label="姓名">
+                    <el-input v-model="studentDialog.form.stuName"></el-input>
+                </el-form-item>
+                <el-form-item label="性别">
+                    <el-select v-model="studentDialog.form.stuGender" style="width: 100%">
+                        <el-option label="男" value="M"></el-option>
+                        <el-option label="女" value="F"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="班级">
+                    <el-input v-model="studentDialog.form.stuClass"></el-input>
+                </el-form-item>
+                <el-form-item label="电话">
+                    <el-input v-model="studentDialog.form.stuPhone"></el-input>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="studentDialog.visible = false">取消</el-button>
+                    <el-button type="primary" @click="saveStudent">确定</el-button>
+                </span>
+            </template>
+        </el-dialog>
+
+        <!-- 课程对话框 -->
+        <el-dialog v-model="courseDialog.visible" :title="courseDialog.title">
+            <el-form :model="courseDialog.form" label-width="80px">
+                <el-form-item label="课程名称">
+                    <el-input v-model="courseDialog.form.courseName"></el-input>
+                </el-form-item>
+                <el-form-item label="教师">
+                    <el-input v-model="courseDialog.form.teacher"></el-input>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="courseDialog.visible = false">取消</el-button>
+                    <el-button type="primary" @click="saveCourse">确定</el-button>
+                </span>
+            </template>
+        </el-dialog>
+
+        <!-- 成绩对话框 -->
+        <el-dialog v-model="scoreDialog.visible" :title="scoreDialog.title">
+            <el-form :model="scoreDialog.form" label-width="80px">
+                <el-form-item label="学生">
+                    <el-select v-model="scoreDialog.form.student.stuId" style="width: 100%">
+                        <el-option v-for="student in students" 
+                                 :key="student.stuId" 
+                                 :label="student.stuName" 
+                                 :value="student.stuId">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="课程">
+                    <el-select v-model="scoreDialog.form.course.courseId" style="width: 100%">
+                        <el-option v-for="course in courses" 
+                                 :key="course.courseId" 
+                                 :label="course.courseName" 
+                                 :value="course.courseId">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="分数">
+                    <el-input-number v-model="scoreDialog.form.score" 
+                                   :min="0" 
+                                   :max="100" 
+                                   :precision="1"
+                                   style="width: 100%">
+                    </el-input-number>
+                </el-form-item>
+                <el-form-item label="学期">
+                    <el-input v-model="scoreDialog.form.semester"></el-input>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <span class="dialog-footer">
+                    <el-button @click="scoreDialog.visible = false">取消</el-button>
+                    <el-button type="primary" @click="saveScore">确定</el-button>
+                </span>
+            </template>
+        </el-dialog>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue;
+        const app = createApp({
+            setup() {
+                const currentView = ref('students');
+                const loading = ref({
+                    students: false,
+                    courses: false,
+                    scores: false
+                });
+
+                // 数据
+                const students = ref([]);
+                const courses = ref([]);
+                const scores = ref([]);
+
+                // 对话框状态
+                const studentDialog = ref({
+                    visible: false,
+                    title: '',
+                    form: {
+                        stuName: '',
+                        stuGender: 'M',
+                        stuClass: '',
+                        stuPhone: ''
+                    }
+                });
+
+                const courseDialog = ref({
+                    visible: false,
+                    title: '',
+                    form: {
+                        courseName: '',
+                        teacher: ''
+                    }
+                });
+
+                const scoreDialog = ref({
+                    visible: false,
+                    title: '',
+                    form: {
+                        student: { stuId: null },
+                        course: { courseId: null },
+                        score: 0,
+                        semester: ''
+                    }
+                });
+
+                // 视图切换
+                const switchView = async (view) => {
+                    currentView.value = view;
+                    // 切换视图时加载对应数据
+                    if (view === 'students') {
+                        await loadStudents();
+                    } else if (view === 'courses') {
+                        await loadCourses();
+                    } else if (view === 'scores') {
+                        await loadScores();
+                    }
+                };
+
+                // 加载数据
+                const loadStudents = async () => {
+                    loading.value.students = true;
+                    try {
+                        const response = await axios.get('/api/students');
+                        students.value = response.data;
+                    } catch (error) {
+                        ElMessage.error('加载学生数据失败');
+                    } finally {
+                        loading.value.students = false;
+                    }
+                };
+
+                const loadCourses = async () => {
+                    loading.value.courses = true;
+                    try {
+                        const response = await axios.get('/api/courses');
+                        courses.value = response.data;
+                    } catch (error) {
+                        ElMessage.error('加载课程数据失败');
+                    } finally {
+                        loading.value.courses = false;
+                    }
+                };
+
+                const loadScores = async () => {
+                    loading.value.scores = true;
+                    try {
+                        const response = await axios.get('/api/scores');
+                        scores.value = response.data;
+                    } catch (error) {
+                        ElMessage.error('加载成绩数据失败');
+                    } finally {
+                        loading.value.scores = false;
+                    }
+                };
+
+                // 学生相关方法
+                const showAddStudentDialog = () => {
+                    studentDialog.value.title = '新增学生';
+                    studentDialog.value.form = {
+                        stuName: '',
+                        stuGender: 'M',
+                        stuClass: '',
+                        stuPhone: ''
+                    };
+                    studentDialog.value.visible = true;
+                };
+
+                const showEditStudentDialog = (student) => {
+                    studentDialog.value.title = '编辑学生';
+                    studentDialog.value.form = {
+                        stuId: student.stuId,
+                        stuName: student.stuName,
+                        stuGender: student.stuGender,
+                        stuClass: student.stuClass,
+                        stuPhone: student.stuPhone
+                    };
+                    studentDialog.value.visible = true;
+                };
+
+                const saveStudent = async () => {
+                    try {
+                        let response;
+                        if (studentDialog.value.form.stuId) {
+                            response = await axios.put(`/api/students/${studentDialog.value.form.stuId}`, studentDialog.value.form);
+                        } else {
+                            response = await axios.post('/api/students', studentDialog.value.form);
+                        }
+                        studentDialog.value.visible = false;
+                        ElMessage.success('保存成功');
+                        // 重新加载数据并切换到学生视图
+                        await switchView('students');
+                    } catch (error) {
+                        console.error('保存失败:', error);
+                        ElMessage.error('保存失败: ' + (error.response?.data?.message || error.message || '未知错误'));
+                    }
+                };
+
+                const deleteStudent = async (student) => {
+                    try {
+                        await ElMessageBox.confirm('确定要删除该学生吗？', '提示', {
+                            confirmButtonText: '确定',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                        });
+                        
+                        await axios.delete(`/api/students/${student.stuId}`);
+                        ElMessage.success('删除成功');
+                        // 重新加载数据并切换到学生视图
+                        await switchView('students');
+                    } catch (error) {
+                        if (error !== 'cancel') {
+                            console.error('删除失败:', error);
+                            ElMessage.error('删除失败: ' + (error.response?.data?.message || error.message || '未知错误'));
+                        }
+                    }
+                };
+
+                // 课程相关方法
+                const showAddCourseDialog = () => {
+                    courseDialog.value.title = '新增课程';
+                    courseDialog.value.form = {
+                        courseName: '',
+                        teacher: ''
+                    };
+                    courseDialog.value.visible = true;
+                };
+
+                const showEditCourseDialog = (course) => {
+                    courseDialog.value.title = '编辑课程';
+                    courseDialog.value.form = { ...course };
+                    courseDialog.value.visible = true;
+                };
+
+                const saveCourse = async () => {
+                    try {
+                        let response;
+                        if (courseDialog.value.form.courseId) {
+                            response = await axios.put(`/api/courses/${courseDialog.value.form.courseId}`, courseDialog.value.form);
+                        } else {
+                            response = await axios.post('/api/courses', courseDialog.value.form);
+                        }
+                        courseDialog.value.visible = false;
+                        ElMessage.success('保存成功');
+                        // 重新加载数据并切换到课程视图
+                        await switchView('courses');
+                    } catch (error) {
+                        console.error('保存失败:', error);
+                        ElMessage.error('保存失败: ' + (error.response?.data?.message || error.message || '未知错误'));
+                    }
+                };
+
+                const deleteCourse = async (course) => {
+                    try {
+                        await ElMessageBox.confirm('确定要删除该课程吗？', '提示', {
+                            confirmButtonText: '确定',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                        });
+                        
+                        await axios.delete(`/api/courses/${course.courseId}`);
+                        ElMessage.success('删除成功');
+                        // 重新加载数据并切换到课程视图
+                        await switchView('courses');
+                    } catch (error) {
+                        if (error !== 'cancel') {
+                            console.error('删除失败:', error);
+                            ElMessage.error('删除失败: ' + (error.response?.data?.message || error.message || '未知错误'));
+                        }
+                    }
+                };
+
+                // 成绩相关方法
+                const showAddScoreDialog = () => {
+                    scoreDialog.value.title = '新增成绩';
+                    scoreDialog.value.form = {
+                        student: { stuId: null },
+                        course: { courseId: null },
+                        score: 0,
+                        semester: ''
+                    };
+                    scoreDialog.value.visible = true;
+                };
+
+                const showEditScoreDialog = (score) => {
+                    scoreDialog.value.title = '编辑成绩';
+                    scoreDialog.value.form = { ...score };
+                    scoreDialog.value.visible = true;
+                };
+
+                const saveScore = async () => {
+                    try {
+                        let response;
+                        if (scoreDialog.value.form.scoreId) {
+                            response = await axios.put(`/api/scores/${scoreDialog.value.form.scoreId}`, scoreDialog.value.form);
+                        } else {
+                            response = await axios.post('/api/scores', scoreDialog.value.form);
+                        }
+                        scoreDialog.value.visible = false;
+                        ElMessage.success('保存成功');
+                        // 重新加载数据并切换到成绩视图
+                        await switchView('scores');
+                    } catch (error) {
+                        console.error('保存失败:', error);
+                        ElMessage.error('保存失败: ' + (error.response?.data?.message || error.message || '未知错误'));
+                    }
+                };
+
+                const deleteScore = async (score) => {
+                    try {
+                        await ElMessageBox.confirm('确定要删除该成绩吗？', '提示', {
+                            confirmButtonText: '确定',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                        });
+                        
+                        await axios.delete(`/api/scores/${score.scoreId}`);
+                        ElMessage.success('删除成功');
+                        // 重新加载数据并切换到成绩视图
+                        await switchView('scores');
+                    } catch (error) {
+                        if (error !== 'cancel') {
+                            console.error('删除失败:', error);
+                            ElMessage.error('删除失败: ' + (error.response?.data?.message || error.message || '未知错误'));
+                        }
+                    }
+                };
+
+                // 初始化加载
+                loadStudents();
+                loadCourses();
+                loadScores();
+
+                return {
+                    currentView,
+                    loading,
+                    students,
+                    courses,
+                    scores,
+                    studentDialog,
+                    courseDialog,
+                    scoreDialog,
+                    switchView,
+                    showAddStudentDialog,
+                    showEditStudentDialog,
+                    saveStudent,
+                    deleteStudent,
+                    showAddCourseDialog,
+                    showEditCourseDialog,
+                    saveCourse,
+                    deleteCourse,
+                    showAddScoreDialog,
+                    showEditScoreDialog,
+                    saveScore,
+                    deleteScore
+                };
+            }
+        });
+
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+</body>
+</html> 
